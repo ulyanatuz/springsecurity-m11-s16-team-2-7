@@ -26,6 +26,10 @@ public class UserDetailsImpl implements UserDetails {
         return authorities;
     }
 
+    public String getFullName(){
+        return user.getFirstName()+" "+user.getLastName();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
