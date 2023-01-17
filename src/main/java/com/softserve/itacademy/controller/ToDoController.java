@@ -1,11 +1,14 @@
 package com.softserve.itacademy.controller;
 
+import com.softserve.itacademy.exception.InvalidAccessException;
 import com.softserve.itacademy.model.Task;
 import com.softserve.itacademy.model.ToDo;
 import com.softserve.itacademy.model.User;
+import com.softserve.itacademy.security.UserDetailsImpl;
 import com.softserve.itacademy.service.TaskService;
 import com.softserve.itacademy.service.ToDoService;
 import com.softserve.itacademy.service.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -31,14 +34,20 @@ public class ToDoController {
     }
 
     @GetMapping("/create/users/{owner_id}")
-    public String create(@PathVariable("owner_id") long ownerId, Model model) {
+    public String create(@PathVariable("owner_id") long ownerId, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
+        if(userDetails.getId()!=ownerId){
+            throw new InvalidAccessException("can't access other users' data");
+        }
         model.addAttribute("todo", new ToDo());
         model.addAttribute("ownerId", ownerId);
         return "create-todo";
     }
 
     @PostMapping("/create/users/{owner_id}")
-    public String create(@PathVariable("owner_id") long ownerId, @Validated @ModelAttribute("todo") ToDo todo, BindingResult result) {
+    public String create(@PathVariable("owner_id") long ownerId, @AuthenticationPrincipal UserDetailsImpl userDetails, @Validated @ModelAttribute("todo") ToDo todo, BindingResult result) {
+        if(userDetails.getId()!=ownerId){
+            throw new InvalidAccessException("can't access other users' data");
+        }
         if (result.hasErrors()) {
             return "create-todo";
         }
@@ -49,7 +58,7 @@ public class ToDoController {
     }
 
     @GetMapping("/{id}/tasks")
-    public String read(@PathVariable long id, Model model) {
+    public String read(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         ToDo todo = todoService.readById(id);
         List<Task> tasks = taskService.getByTodoId(id);
         List<User> users = userService.getAll().stream()

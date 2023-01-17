@@ -3,11 +3,14 @@ package com.softserve.itacademy.controller;
 import com.softserve.itacademy.exception.InvalidAccessException;
 import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.security.UserDetailsImpl;
+import com.softserve.itacademy.security.UserDetailsServiceImpl;
 import com.softserve.itacademy.service.RoleService;
 import com.softserve.itacademy.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/users")
 public class UserController {
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    UserDetailsServiceImpl userDetailsService;
 
     private final UserService userService;
     private final RoleService roleService;
@@ -38,7 +45,7 @@ public class UserController {
         if (result.hasErrors()) {
             return "create-user";
         }
-        user.setPassword(user.getPassword());
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setRole(roleService.readById(2));
         User newUser = userService.create(user);
         return "redirect:/todos/all/users/" + newUser.getId();
