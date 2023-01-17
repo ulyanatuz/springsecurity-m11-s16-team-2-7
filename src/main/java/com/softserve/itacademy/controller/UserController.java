@@ -5,6 +5,8 @@ import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.security.UserDetailsImpl;
 import com.softserve.itacademy.service.RoleService;
 import com.softserve.itacademy.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
     private final RoleService roleService;
+    Logger logger = LoggerFactory.getLogger("UserController.class");
 
     public UserController(UserService userService, RoleService roleService) {
         this.userService = userService;

@@ -20,8 +20,6 @@ public class LoginController {
 
     @GetMapping("/login-form")
     public String loginForm() {
-        System.out.println("admin password = "+bCryptPasswordEncoder.encode("admin"));
-        System.out.println("user password = "+bCryptPasswordEncoder.encode("user"));
         return "login-page";
     }
 

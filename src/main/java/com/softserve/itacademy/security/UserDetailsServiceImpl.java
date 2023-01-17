@@ -23,10 +23,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Could not find user with that email");
         }
-
-//        Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-//        grantedAuthorities.add(new SimpleGrantedAuthority(user.getRole().getName()));
-//        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities);
         return new UserDetailsImpl(user);
     }
 
