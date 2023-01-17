@@ -1,11 +1,15 @@
 package com.softserve.itacademy.controller;
 
+import com.softserve.itacademy.exception.InvalidAccessException;
 import com.softserve.itacademy.model.Task;
 import com.softserve.itacademy.model.ToDo;
 import com.softserve.itacademy.model.User;
+import com.softserve.itacademy.security.PermissionValidator;
+import com.softserve.itacademy.security.UserDetailsImpl;
 import com.softserve.itacademy.service.TaskService;
 import com.softserve.itacademy.service.ToDoService;
 import com.softserve.itacademy.service.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -49,7 +53,7 @@ public class ToDoController {
     }
 
     @GetMapping("/{id}/tasks")
-    public String read(@PathVariable long id, Model model) {
+    public String read(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         ToDo todo = todoService.readById(id);
         List<Task> tasks = taskService.getByTodoId(id);
         List<User> users = userService.getAll().stream()
@@ -61,8 +65,11 @@ public class ToDoController {
     }
 
     @GetMapping("/{todo_id}/update/users/{owner_id}")
-    public String update(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId, Model model) {
+    public String update(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId,
+                         @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         ToDo todo = todoService.readById(todoId);
+        User user = userService.readById(ownerId);
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("todo", todo);
         return "update-todo";
     }
@@ -82,23 +89,31 @@ public class ToDoController {
     }
 
     @GetMapping("/{todo_id}/delete/users/{owner_id}")
-    public String delete(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId) {
+    public String delete(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId,
+                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userService.readById(ownerId);
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         todoService.delete(todoId);
         return "redirect:/todos/all/users/" + ownerId;
     }
 
     @GetMapping("/all/users/{user_id}")
-    public String getAll(@PathVariable("user_id") long userId, Model model) {
+    public String getAll(@PathVariable("user_id") long userId, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         List<ToDo> todos = todoService.getByUserId(userId);
+        User user = userService.readById(userId);
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
         return "todos-user";
     }
 
     @GetMapping("/{id}/add")
-    public String addCollaborator(@PathVariable long id, @RequestParam("user_id") long userId) {
+    public String addCollaborator(@PathVariable long id, @RequestParam("user_id") long userId,
+                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
+        User user  = todo.getOwner();
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         collaborators.add(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
@@ -106,9 +121,12 @@ public class ToDoController {
     }
 
     @GetMapping("/{id}/remove")
-    public String removeCollaborator(@PathVariable long id, @RequestParam("user_id") long userId) {
+    public String removeCollaborator(@PathVariable long id, @RequestParam("user_id") long userId,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
+        User user  = todo.getOwner();
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         collaborators.remove(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
