@@ -27,6 +27,12 @@ public class GlobalExceptionHandler {
         return getModelAndView(request, HttpStatus.NOT_FOUND, exception);
     }
 
+    @ExceptionHandler(InvalidAccessException.class)
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    public ModelAndView invalidAccessExceptionHandler(HttpServletRequest request, InvalidAccessException exception) {
+        return getModelAndView(request, HttpStatus.FORBIDDEN, exception);
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(value= HttpStatus.INTERNAL_SERVER_ERROR)
     public ModelAndView internalServerErrorHandler(HttpServletRequest request, Exception exception) {

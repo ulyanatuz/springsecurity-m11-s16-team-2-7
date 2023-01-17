@@ -1,8 +1,11 @@
 package com.softserve.itacademy.controller;
 
+import com.softserve.itacademy.exception.InvalidAccessException;
 import com.softserve.itacademy.model.User;
+import com.softserve.itacademy.security.UserDetailsImpl;
 import com.softserve.itacademy.service.RoleService;
 import com.softserve.itacademy.service.UserService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,8 +42,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/read")
-    public String read(@PathVariable long id, Model model) {
+    public String read(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         User user = userService.readById(id);
+        logger.info("userDetails name while reading user = "+userDetails.getUsername());
+        if(!userDetails.getUsername().equals(user.getEmail())){
+            throw new InvalidAccessException("cannot access other users' data");
+        }
         model.addAttribute("user", user);
         return "user-info";
     }
