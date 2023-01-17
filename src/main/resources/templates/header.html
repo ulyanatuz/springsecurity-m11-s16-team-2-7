@@ -1,8 +1,19 @@
 <div xmlns:th="http://www.thymeleaf.org">
     <nav class="navbar navbar-default">
         <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" th:href="@{/}">TODOs List</a>
+            <div class="navbar-header" style="width: 100%">
+                <a class="navbar-brand col-lg-4" th:href="@{/}">TODOs List</a>
+                <div class="col-lg-8" style="text-align:right">
+                    <th:block th:if="${#authorization.expression('isAuthenticated()')}">
+                        <div class="greeting">
+                            <span>Hello</span>
+                            <span th:text="${#authentication.getPrincipal().getFullName()}"></span>
+                        </div>
+                        <div class="logout">
+                            <a th:href="@{|/perform-logout|}">Sign out</a>
+                        </div>
+                    </th:block>
+                </div>
             </div>
         </div>
     </nav>
