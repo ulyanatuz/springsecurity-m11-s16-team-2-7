@@ -28,4 +28,9 @@ public class LoginController {
          return "login-page";
     }
 
+    @GetMapping("/403")
+    public String accessDenied() {
+        return "403";
+    }
+
 }
