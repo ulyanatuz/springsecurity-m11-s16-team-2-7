@@ -30,6 +30,10 @@ public class UserDetailsImpl implements UserDetails {
         return user.getFirstName()+" "+user.getLastName();
     }
 
+    public long getId(){
+        return user.getId();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
