@@ -33,7 +33,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/users/create").permitAll()
-                .antMatchers("/users/all", "/users/*/update", "/users/*/delete" )
+                .antMatchers("/users/all")
                 .hasAnyRole("ADMIN")
                 .anyRequest().authenticated()
                 .and().exceptionHandling().accessDeniedHandler(accessDeniedHandler())
