@@ -56,15 +56,15 @@ public class UserController {
     public String read(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         User user = userService.readById(id);
         logger.info("userDetails name while reading user = "+userDetails.getUsername());
-        PermissionValidator.validateOwnership(userDetails, user.getEmail());
+//        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("user", user);
         return "user-info";
     }
 
     @GetMapping("/{id}/update")
     public String update(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
+        PermissionValidator.validateOwnership(userDetails, id);
         User user = userService.readById(id);
-        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("user", user);
         model.addAttribute("roles", roleService.getAll());
         return "update-user";
@@ -72,7 +72,10 @@ public class UserController {
 
 
     @PostMapping("/{id}/update")
-    public String update(@PathVariable long id, Model model, @Validated @ModelAttribute("user") User user, @RequestParam("roleId") long roleId, BindingResult result) {
+    public String update(@PathVariable long id, Model model, @Validated @ModelAttribute("user") User user,
+                         @AuthenticationPrincipal UserDetailsImpl userDetails,
+                         @RequestParam("roleId") long roleId, BindingResult result) {
+        PermissionValidator.validateOwnership(userDetails, id);
         User oldUser = userService.readById(id);
         if (result.hasErrors()) {
             user.setRole(oldUser.getRole());
@@ -91,8 +94,8 @@ public class UserController {
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable("id") long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user  = userService.readById(id);
-        PermissionValidator.validateOwnership(userDetails, user.getEmail());
+//        User user  = userService.readById(id);
+        PermissionValidator.validateOwnership(userDetails, id);
         userService.delete(id);
         return "redirect:/users/all";
     }

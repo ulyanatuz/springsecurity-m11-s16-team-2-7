@@ -35,14 +35,16 @@ public class ToDoController {
     }
 
     @GetMapping("/create/users/{owner_id}")
-    public String create(@PathVariable("owner_id") long ownerId, Model model) {
+    public String create(@PathVariable("owner_id") long ownerId, Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        PermissionValidator.validateOwnership(userDetails, ownerId);
         model.addAttribute("todo", new ToDo());
         model.addAttribute("ownerId", ownerId);
         return "create-todo";
     }
 
     @PostMapping("/create/users/{owner_id}")
-    public String create(@PathVariable("owner_id") long ownerId, @Validated @ModelAttribute("todo") ToDo todo, BindingResult result) {
+    public String create(@PathVariable("owner_id") long ownerId, @Validated @ModelAttribute("todo") ToDo todo, BindingResult result, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        PermissionValidator.validateOwnership(userDetails, ownerId);
         if (result.hasErrors()) {
             return "create-todo";
         }
@@ -99,9 +101,9 @@ public class ToDoController {
 
     @GetMapping("/all/users/{user_id}")
     public String getAll(@PathVariable("user_id") long userId, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
-        List<ToDo> todos = todoService.getByUserId(userId);
+        List<ToDo> todos = todoService.getByUserId(userDetails.getId());
         User user = userService.readById(userId);
-        PermissionValidator.validateOwnership(userDetails, user.getEmail());
+//        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
         return "todos-user";
@@ -126,7 +128,6 @@ public class ToDoController {
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
         User user  = todo.getOwner();
-        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         collaborators.remove(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
