@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Controller
@@ -101,9 +102,10 @@ public class ToDoController {
 
     @GetMapping("/all/users/{user_id}")
     public String getAll(@PathVariable("user_id") long userId, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
-        List<ToDo> todos = todoService.getByUserId(userDetails.getId());
-        User user = userService.readById(userId);
-//        PermissionValidator.validateOwnership(userDetails, user.getEmail());
+        User loggedInUser = userService.readById(userDetails.getId());
+        List<ToDo> todos = todoService.getByUserId(userId).stream()
+                .filter(toDo -> toDo.getOwner().getId() == userDetails.getId() || toDo.getCollaborators().contains(loggedInUser))
+                .collect(Collectors.toList());
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
         return "todos-user";
