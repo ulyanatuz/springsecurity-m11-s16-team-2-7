@@ -130,6 +130,7 @@ public class ToDoController {
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
         User user  = todo.getOwner();
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         collaborators.remove(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
