@@ -2,6 +2,7 @@ package com.softserve.itacademy.controller;
 
 import com.softserve.itacademy.exception.InvalidAccessException;
 import com.softserve.itacademy.model.User;
+import com.softserve.itacademy.security.PermissionValidator;
 import com.softserve.itacademy.security.UserDetailsImpl;
 import com.softserve.itacademy.security.UserDetailsServiceImpl;
 import com.softserve.itacademy.service.RoleService;
@@ -55,16 +56,15 @@ public class UserController {
     public String read(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         User user = userService.readById(id);
         logger.info("userDetails name while reading user = "+userDetails.getUsername());
-        if(!userDetails.getUsername().equals(user.getEmail())){
-            throw new InvalidAccessException("cannot access other users' data");
-        }
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("user", user);
         return "user-info";
     }
 
     @GetMapping("/{id}/update")
-    public String update(@PathVariable long id, Model model) {
+    public String update(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         User user = userService.readById(id);
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         model.addAttribute("user", user);
         model.addAttribute("roles", roleService.getAll());
         return "update-user";
@@ -90,7 +90,9 @@ public class UserController {
 
 
     @GetMapping("/{id}/delete")
-    public String delete(@PathVariable("id") long id) {
+    public String delete(@PathVariable("id") long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user  = userService.readById(id);
+        PermissionValidator.validateOwnership(userDetails, user.getEmail());
         userService.delete(id);
         return "redirect:/users/all";
     }
