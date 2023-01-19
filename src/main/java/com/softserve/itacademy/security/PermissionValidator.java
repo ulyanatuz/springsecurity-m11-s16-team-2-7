@@ -11,8 +11,8 @@ public class PermissionValidator {
     }
 
     public static void validateOwnership(UserDetailsImpl userDetails, Long id){
-        if(userDetails.getId() != id ||
-                userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"))){
+        if(!(userDetails.getId() == id ||
+                userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN")))){
             throw new InvalidAccessException("cannot access other users' data");
         }
     }

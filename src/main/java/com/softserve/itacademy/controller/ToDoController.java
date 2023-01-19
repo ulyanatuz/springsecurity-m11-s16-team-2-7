@@ -106,6 +106,7 @@ public class ToDoController {
         List<ToDo> todos = todoService.getByUserId(userId).stream()
                 .filter(toDo -> toDo.getOwner().getId() == userDetails.getId() || toDo.getCollaborators().contains(loggedInUser))
                 .collect(Collectors.toList());
+        PermissionValidator.validateOwnership(userDetails, userId);
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
         return "todos-user";
